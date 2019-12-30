@@ -16,17 +16,25 @@ TODO: example of bad action pattern (see federationrepo)
 
 The solution is a bit radical. You need to completely change your definition of an action. In fact, it's better to stop using the term Actions and instead refer to them as `Events`.
 
-But this doesn't mean we are getting rid of Actions completely. Instead, our `Actions` are defined by the user, not by what modifies the state. Actions have a direct binding to the UI. When Actions are run, they dispatch Events.
+But this doesn't mean we are getting rid of Actions completely. Instead of only creating actions when we need to update state, we create `Actions` when we need to implement the logic for handling user interactions. This means that Actions have a direct binding to the UI.
+
+When Actions are run, they dispatch Events (a.k.a. traditional Redux Actions).
 
 TODO: Insert image of the Redux state/store data flow.
 
-This is all great, but when I first saw it I didn't fully understand how I wrestle this paradigm into my code. When we put Events between our Actions and our Reducers, the flow looks a bit more like this:
+This is all great, but when I first saw [the Redux state/store data flow] I didn't fully understand how this ties into my application code. When we put Events between our Actions and our Reducers, the flow looks a bit more like this:
 
 ```
 User ---(interacts with)----> UI ----(calls)---> Actions ---(dispatch)---> Events ---(handled by)---> Reducers --(mutate)--> state --(updates)---> UI
 
 TODO: this should be an infographic
 ```
+
+For me, this flow makes it a bit easier to see where I'm adding code to my application and how data gets moved around inside it.
+
+That's not all though. With this state management architecture, it becomes much easier to reason about how you can implement display logic. This has a direct impact on UX. Let me explain:
+You've probably been given a sketch/figma/Adobe XD document before that outlines some sort of user story/funnel/channel. It includes a component that has some initial state, and then arrows that indicate how the component looks after various user interactions.
+Because these different possible states for a component are often sequential, we need to make our new Actions asynchronous. To make this possible, I use `redux-thunk` along with async/await to write extremely easy to read code for our actions (which helps a lot when you have to maintain a large application).
 
 ## An Example App
 
@@ -46,7 +54,16 @@ cd calculator
 npm i redux redux-thunk
 ```
 
-First, lets take a look at the architecture of our app:
+Next, add some folders to organize the code in the `src` folder:
 
 ![Boilerplate Architecture](https://i.imgur.com/31oT9Yv.png)
 TODO: UPDATE THIS AS IT CHANGES
+
+## CONTENT NOTES
+
+## Error and Loading Events
+
+One of the neat benefits of this state management architecture is more streamlined error handling. Because our actions can potentially dispatch multiple actions (not necessarily simultaneously), if an action produces an error it can dispatch an `ERROR` event that updates the application state accordingly.
+
+The pattern is fairly similar for changing the loading state. As previously mentioned, we are often given designs that outline a very specific set of possible states for a component. We can use a single type of `LOADING` event that we dispatch to our state and attach data about _what_ is loading in the Event's payload.
+We can easily specify the async
